@@ -1,0 +1,146 @@
+#include <iostream>
+#include <conio.h>
+using namespace std;
+class BitSet{
+      int *v;
+      int biti;
+      public:
+             BitSet(){biti=256;
+                      v=new int [biti];
+                      for(int i=0;i<biti;i++)
+                              *(v+i)=0;
+                      };
+                      
+             BitSet(int q){biti=16*q;
+                        v=new int [biti];
+                        for(int i=0;i<biti;i++)
+                              *(v+i)=0;
+                        
+                        }
+                        
+            ~BitSet(){delete [] v;}
+                     
+             bool contains(int i) { 
+                   return (v[i/16] & (1 << (15-i%16)));
+                    }
+             bool contains (BitSet& a);
+             int card(){int j=0;
+                        for(int i=0;i<biti;i++)if(this->contains(i))j+=1;
+                        return j;}
+             int size(){ return this->biti;}
+             bool isEmpty(){
+                    if(this->contains(1))return 0;
+                    return 1;
+                    }
+     friend ostream& operator << (ostream&, BitSet &);
+     BitSet & operator + (int);
+     BitSet & operator = (BitSet &);
+     bool  operator ==(BitSet &);
+     friend BitSet& operator + (BitSet& ,BitSet& );
+     friend BitSet& operator - (BitSet& ,BitSet& );
+     friend BitSet& operator * (BitSet& ,BitSet& );
+};
+bool BitSet::contains(BitSet& i){
+    bool j=true;
+    for(int f = 0; f < 16; f++)
+    if(i.v[f]!=0)
+    for(int g = 0; g < 16; g++)
+    if (i.v[f] & (1<<(15-g)))
+    if(!this->contains(16*f+g))
+              j=false;
+      return j;
+     }
+BitSet & BitSet::operator + (int b){
+       this->v[b/16]=this->v[b/16] | (1 << (15-b%16));
+          }
+BitSet & BitSet::operator = (BitSet &b){
+       this->biti=b.biti;
+       for(int i=0;i<this->size();i++)      
+               this->v[i]=b.v[i];
+       return *this;
+               } 
+bool BitSet::operator ==(BitSet& b){
+     return (contains(b)&&b.contains(*this));}
+BitSet& operator + (BitSet& a,BitSet& b){
+         BitSet *r;
+         r=new BitSet;
+         for(int f=0;f<a.size();f++)
+                 if(a.contains(f)||b.contains(f))
+                                                 *r + f;
+       return *r;                                    
+           };       
+BitSet& operator - (BitSet & a,BitSet & b){
+        BitSet *r;
+        r=new BitSet;
+        for(int f=0;f<a.size();f++)
+                if(a.contains(f)&&!b.contains(f))
+                                                 *r + f;
+        return *r;
+        }   
+BitSet& operator * (BitSet & a,BitSet & b){
+        BitSet *r;
+        r=new BitSet;
+        for(int f=0;f<a.size();f++)
+                if(a.contains(f)&&b.contains(f))
+                                                 *r + f;
+        return *r;
+        }
+ostream& operator << (ostream& c, BitSet & b){
+      c<<"[";
+      for (int f = 0; f < b.size(); f++){
+      if (b.v[f] != 0)
+      for (int g = 0; g < 16; g++)
+      if (b.v[f] & (1<<(15-g)))
+         c << 16*f+g << "," ;
+      }
+      c<<"\b]\n";
+      return c;     
+     };
+
+int main() {
+    BitSet a,b;
+    a + 7;
+    a + 6;
+    a + 10;
+    a + 3;
+    b + 3;
+    b + 8;
+    b + 2;
+    b + 5;
+    cout << a;
+    cout << b;
+    BitSet c;
+    c = a + b;
+    cout << c;
+    c = a - b;
+    cout << c;
+    c = a * b;
+    cout << c;
+    if (a == b) cout<< "multimi egale\n";
+    else cout << "multimile nu sunt egale\n";
+    BitSet S;
+    BitSet C[30];
+    BitSet A[30];    
+    for(int i=1;i<=5;i++)S + i;
+    cout << S;
+    C[1] + 2; C[1] + 5;
+    C[2] + 2; C[2] + 3; C[2] + 4;     
+    C[3] + 3; C[3] + 4; C[3] + 5;
+    C[4] + 1; C[4] + 3; C[4] + 4;
+    for(int i=1;i<=4;i++)cout << C[i];
+     for(int i=1;i<=4;i++)if(C[i] == S){cout<<"sol este C["<<i<<"]";getch();return 0;}
+     cout<<"sol este:\n";
+     while(!S.isEmpty()){
+                         int imax=1;
+                         for(int i=1;i<=4;i++)
+ 	                     {A[i] = S * C[i];
+ 	                     if(A[i].card() > A[imax].card())imax=i;
+                         }
+ 	                     cout <<"C["<<imax<<"]=";
+   	                     cout << C[imax];
+                         S = S - C[imax];
+   	                     
+                       }
+    getch();
+    return 0;
+}
